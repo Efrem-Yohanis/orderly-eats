@@ -1,11 +1,27 @@
 import { useState } from "react";
 import { OrderCard, OrderStatus } from "@/components/OrderCard";
 import { StatCard } from "@/components/StatCard";
+import { AddOrderDialog } from "@/components/AddOrderDialog";
 import { ShoppingBag, DollarSign, Clock, CheckCircle2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  customerName: string;
+  items: OrderItem[];
+  total: number;
+  status: OrderStatus;
+  time: string;
+}
+
 // Mock data - replace with real data later
-const initialOrders = [
+const initialOrders: Order[] = [
   {
     id: "1",
     customerName: "Sarah Johnson",
@@ -48,13 +64,13 @@ const initialOrders = [
       { name: "Miso Soup", quantity: 2, price: 3.99 },
     ],
     total: 32.97,
-    status: "completed" as OrderStatus,
+    status: "delivered" as OrderStatus,
     time: "15 mins ago",
   },
 ];
 
 const Index = () => {
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
     setOrders((prevOrders) =>
@@ -62,23 +78,45 @@ const Index = () => {
     );
   };
 
+  const handleUpdatePrice = (orderId: string, newTotal: number) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) => (order.id === orderId ? { ...order, total: newTotal } : order))
+    );
+  };
+
+  const handleAddOrder = (customerName: string, items: OrderItem[]) => {
+    const total = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    const newOrder: Order = {
+      id: Date.now().toString(),
+      customerName,
+      items,
+      total,
+      status: "new",
+      time: "Just now",
+    };
+    setOrders([newOrder, ...orders]);
+  };
+
   const filterOrdersByStatus = (status: OrderStatus) => orders.filter((order) => order.status === status);
 
   const stats = {
     totalOrders: orders.length,
-    activeOrders: orders.filter((o) => o.status !== "completed").length,
-    completedToday: orders.filter((o) => o.status === "completed").length,
+    activeOrders: orders.filter((o) => o.status !== "delivered").length,
+    completedToday: orders.filter((o) => o.status === "delivered").length,
     revenue: orders.reduce((sum, order) => sum + order.total, 0),
   };
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Kitchen Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">Manage your orders in real-time</p>
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Kitchen Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">Manage your orders in real-time</p>
+          </div>
+          <AddOrderDialog onAddOrder={handleAddOrder} />
         </div>
       </header>
 
@@ -98,7 +136,7 @@ const Index = () => {
             className="transition-all duration-300 hover:shadow-md"
           />
           <StatCard
-            title="Completed Today"
+            title="Delivered Today"
             value={stats.completedToday}
             icon={CheckCircle2}
             className="transition-all duration-300 hover:shadow-md"
@@ -118,13 +156,18 @@ const Index = () => {
             <TabsTrigger value="new">New</TabsTrigger>
             <TabsTrigger value="preparing">Preparing</TabsTrigger>
             <TabsTrigger value="ready">Ready</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="delivered">Delivered</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {orders.map((order) => (
-                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onStatusChange={handleStatusChange}
+                  onUpdatePrice={handleUpdatePrice}
+                />
               ))}
             </div>
           </TabsContent>
@@ -132,7 +175,12 @@ const Index = () => {
           <TabsContent value="new" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filterOrdersByStatus("new").map((order) => (
-                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onStatusChange={handleStatusChange}
+                  onUpdatePrice={handleUpdatePrice}
+                />
               ))}
             </div>
           </TabsContent>
@@ -140,7 +188,12 @@ const Index = () => {
           <TabsContent value="preparing" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filterOrdersByStatus("preparing").map((order) => (
-                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onStatusChange={handleStatusChange}
+                  onUpdatePrice={handleUpdatePrice}
+                />
               ))}
             </div>
           </TabsContent>
@@ -148,15 +201,25 @@ const Index = () => {
           <TabsContent value="ready" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filterOrdersByStatus("ready").map((order) => (
-                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onStatusChange={handleStatusChange}
+                  onUpdatePrice={handleUpdatePrice}
+                />
               ))}
             </div>
           </TabsContent>
 
-          <TabsContent value="completed" className="space-y-4">
+          <TabsContent value="delivered" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filterOrdersByStatus("completed").map((order) => (
-                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
+              {filterOrdersByStatus("delivered").map((order) => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onStatusChange={handleStatusChange}
+                  onUpdatePrice={handleUpdatePrice}
+                />
               ))}
             </div>
           </TabsContent>
