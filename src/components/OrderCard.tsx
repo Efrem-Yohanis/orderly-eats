@@ -44,7 +44,7 @@ const statusFlow: Record<OrderStatus, OrderStatus | null> = {
 
 export const OrderCard = ({ order, onStatusChange, onUpdatePrice }: OrderCardProps) => {
   const [editPriceOpen, setEditPriceOpen] = useState(false);
-  const currentStatus = statusConfig[order.status];
+  const currentStatus = statusConfig[order.status] || statusConfig.new;
   const nextStatus = statusFlow[order.status];
 
   return (
