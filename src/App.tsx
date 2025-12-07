@@ -3,32 +3,48 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Login from "./pages/Login";
-import Manager from "./pages/Manager";
-import Index from "./pages/Index";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import Dashboard from "./pages/Dashboard";
+import OrderManagement from "./pages/OrderManagement";
+import AllOrders from "./pages/AllOrders";
+import WaiterManagement from "./pages/WaiterManagement";
+import WaiterDetail from "./pages/WaiterDetail";
+import ChefManagement from "./pages/ChefManagement";
+import ChefDetail from "./pages/ChefDetail";
+import CustomerManagement from "./pages/CustomerManagement";
+import CustomerDetail from "./pages/CustomerDetail";
+import Advertisements from "./pages/Advertisements";
+import AdvertisementDetail from "./pages/AdvertisementDetail";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
+    <ThemeProvider>
+      <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/waiter" element={<Index />} />
-            <Route path="/kitchen" element={<NotFound />} />
-            <Route path="/chef" element={<NotFound />} />
-            <Route path="/manager" element={<Manager />} />
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/orders" element={<OrderManagement />} />
+            <Route path="/all-orders" element={<AllOrders />} />
+            <Route path="/waiters" element={<WaiterManagement />} />
+            <Route path="/waiters/:id" element={<WaiterDetail />} />
+            <Route path="/chefs" element={<ChefManagement />} />
+            <Route path="/chefs/:id" element={<ChefDetail />} />
+            <Route path="/customers" element={<CustomerManagement />} />
+            <Route path="/customers/:id" element={<CustomerDetail />} />
+            <Route path="/advertisements" element={<Advertisements />} />
+            <Route path="/advertisements/:id" element={<AdvertisementDetail />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

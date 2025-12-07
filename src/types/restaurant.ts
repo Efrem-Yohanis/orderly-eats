@@ -1,66 +1,101 @@
-export type UserRole = 'waiter' | 'kitchen' | 'chef' | 'manager';
-
-export interface User {
-  id: string;
-  name: string;
-  role: UserRole;
-  avatar?: string;
-}
-
-export interface MenuItem {
-  id: string;
-  name: string;
-  price: number;
-  category: 'appetizers' | 'main' | 'desserts' | 'drinks';
-  cookingTime: number;
-  tags: ('spicy' | 'vegan' | 'gluten-free')[];
-  available: boolean;
-  image?: string;
-}
+export type OrderStatus = 'new' | 'kitchen' | 'ready' | 'delivered' | 'completed';
+export type OrderSource = 'mobile' | 'waiter' | 'qr' | 'web';
 
 export interface OrderItem {
   id: string;
-  menuItem: MenuItem;
+  name: string;
   quantity: number;
+  price: number;
+  modifications?: string[];
   specialInstructions?: string;
-  status: 'pending' | 'preparing' | 'ready' | 'delivered';
+}
+
+export interface OrderTimeline {
+  timestamp: Date;
+  event: string;
+  actor?: string;
+  details?: string;
 }
 
 export interface Order {
   id: string;
   tableNumber: number;
-  waiterId: string;
-  waiterName: string;
+  customerName: string;
+  customerId?: string;
+  source: OrderSource;
+  status: OrderStatus;
   items: OrderItem[];
-  status: 'pending' | 'preparing' | 'ready' | 'delivered' | 'paid';
-  priority: boolean;
+  totalAmount: number;
   createdAt: Date;
-  completedAt?: Date;
-  total: number;
-}
-
-export interface Table {
-  id: string;
-  number: number;
-  seats: number;
-  status: 'vacant' | 'occupied' | 'needs-attention';
-  currentOrderId?: string;
+  estimatedTime?: number;
+  assignedChef?: string;
+  assignedWaiter?: string;
+  timeline: OrderTimeline[];
 }
 
 export interface Staff {
   id: string;
   name: string;
-  role: UserRole;
-  status: 'active' | 'break' | 'off';
-  ordersCompleted: number;
-  avgTime: number;
-  rating: number;
+  role: 'waiter' | 'chef';
+  avatar?: string;
+  status: 'available' | 'busy' | 'break' | 'offline';
+  shift: string;
+  currentOrders: string[];
 }
 
-export interface DailyStats {
-  revenue: number;
-  ordersCompleted: number;
-  avgPrepTime: number;
+export interface Waiter extends Staff {
+  role: 'waiter';
+  phone: string;
+  assignedTables: number[];
+  ordersServedToday: number;
+  avgOrderValue: number;
+  rating: number;
+  tipsToday: number;
+}
+
+export interface Chef extends Staff {
+  role: 'chef';
+  station: 'grill' | 'fry' | 'salad' | 'desserts' | 'main';
+  expertise: string[];
+  ordersCompletedToday: number;
+  avgCookingTime: number;
+  accuracyRate: number;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  avatar?: string;
+  visitCount: number;
+  totalSpent: number;
+  avgSpending: number;
+  favoriteItems: string[];
+  lastVisit: Date;
+  loyaltyTier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  segment: 'regular' | 'occasional' | 'first-time' | 'vip';
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  type: 'push' | 'sms' | 'email' | 'qr';
+  targetSegment: string[];
+  status: 'draft' | 'scheduled' | 'active' | 'completed';
+  scheduledAt?: Date;
+  sentCount: number;
+  openRate: number;
+  clickRate: number;
+  redemptionRate: number;
+  content: string;
+}
+
+export interface DashboardMetrics {
+  ordersInKitchen: number;
+  ordersDeliveredToday: number;
+  newOrdersLastHour: number;
+  totalRevenueToday: number;
+  avgOrderValue: number;
   peakHour: string;
-  topItems: { name: string; count: number }[];
 }
